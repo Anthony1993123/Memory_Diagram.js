@@ -301,28 +301,10 @@
 		// Match pointers with pointed variables
 		
 		displayStep:function(){
-			//this.refresh();
 			var currentStep = this.steps[this.stepCounter];
 			var funcNum = currentStep.func.length;
-			displayAllElem(currentStep,funcNum);
-			// if(moveDir==="next"){
-			// 	var preStep = this.steps[this.stepCounter-1];
-			// 	var preFuncNum = preStep.func.length;
-			// 	if(funcNum<preFuncNum){
-			// 		//this.removeStackFrame();
-			// 		//this.updateStackFrame(funcNum,currentStep.func);
-			// 		this.displayAllElem(currentStep,funcNum);
-			// 	}
-			// 	else if(funcNum>preFuncNum){
-			// 		this.createStackFrame(currentStep.func[funcNum-1]);
-			// 	}
-			// 	else{
-			// 		this.displayAllElem(currentStep,funcNum);
-			// 	}
-			// }
-			// else {
-			// 	this.displayAllElem(currentStep,funcNum);
-			// }			
+			this.displayAllElem(currentStep,funcNum);
+						
 						
 		},
 		displayAllElem:function(currentStep,funcNum){
