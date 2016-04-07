@@ -240,13 +240,34 @@
 
 	MemDiagram.prototype = {
 		init:function(){
-			this.container = $.svg("svg").appendTo(this.element);
-			var containerAttrs = {
-				"id":"container",
-				"height":this.settings.height,
-				"width":this.settings.width
+			var elementStyle = {
+				"display":"inline-block",
+				"position": "relative",
+				"vertical-align": "middle",
+				"overflow":"hidden"
 			};
-			this.setAttr(this.container,containerAttrs);
+			this.setStyles(this.element,elementStyle);
+
+			this.container = $.svg("svg");
+			var containerStyle = {
+				"display": "inline-block",
+    			"position": "absolute",
+   			 	"top": 0,
+    			"left": 0,
+			}
+			this.setStyles(this.container,containerStyle);
+
+			this.container.appendTo(this.element);
+			var containerAttrs = {
+				"version":"1.1",
+				"width":"99%",
+				"height":"99%",				
+				"viewBox":"0 0 1000 800",
+				"preserveAspectRatio":"xMinYMin meet",
+				"class":"svg-content"
+			};
+			var dom = this.container[0];
+			this.setAttr(dom,containerAttrs);
 
 			var stackTitle = $.svg("text").appendTo(this.container).text("STACK");
 			var stackTitleAttrs = this.getTextAttrObj(300,80,40,"middle","keyElem");
@@ -405,10 +426,24 @@
 				this.createStackFrame(currentStep.func[i]);
 			}
 			this.createHeapvars(currentStep.heapvars);
+			this.matchPointers();
 		},
 		setAttr:function(element,attrs){
-			for(attr in attrs){
-				element.attr(attr,attrs[attr]);
+			if (element instanceof jQuery){
+				for(attr in attrs){
+					element.attr(attr,attrs[attr]);
+				}
+			}
+			else{
+				for(attr in attrs){
+					element.setAttribute(attr,attrs[attr]);
+				}
+			}
+			
+		},
+		setStyles:function(element,style){
+			for(key in style){
+				element.css(key,style[key]);
 			}
 		},
 		getTextAttrObj:function(corX,corY,fontSize,textAnchor,className,id){
@@ -434,7 +469,7 @@
 			};
 			return attrObj;
 		},
-		getRectAttrObj:function(corX,corY,width,height,stroke,fill,strokeWidth){
+		getRectAttrObj:function(corX,corY,width,height,stroke,fill,strokeWidth,className){
 			var attrObj = {
 				"x":corX,
 				"y":corY,
@@ -442,10 +477,65 @@
 				"height":height,
 				"stroke":stroke,
 				"fill":fill,
-				"stroke-width":strokeWidth
+				"stroke-width":strokeWidth,
+				"class":className
 			};
 			return attrObj;
 		},
+		getY:function(element){
+			return $(element).attr("y");
+		},
+		getX:function(element){
+			return $(element).attr("x");
+		},
+		matchPointers:function(){
+			var pointers = $('.pointer');
+			var _this = this;
+			pointers.each(function(){
+				var $this = this;
+				var ptrY = _this.getY($this);
+				
+				var values = $('.address');
+				values.each(function(){
+					if($($this).text()===$(this).text()){
+						var valY = _this.getY(this);
+						var valX = _this.getX(this);
+
+						_this.drawConnection(ptrY,valY,valX);
+					}
+				});
+			});
+		},
+		drawConnection:function(ptrY,valY,valX){
+			var startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY;
+			startX = 400;
+			startY = ptrY;
+			mid1X = mid2X = 550;
+
+			if(valX>700){
+				endX = 700;
+			}
+			else{
+				endX = 400;
+			}
+			endY = valY;
+			mid1Y = startY;
+			mid2Y = endY
+			
+			var line1 = $.svg('line').appendTo(this.container);
+			var line1Attrs = this.getLineAttrObj(startX,mid1X,startY,mid1Y,"transparent","black");
+			this.setAttr(line1,line1Attrs);
+
+			var line2 = $.svg('line').appendTo(this.container);
+			var line2Attrs = this.getLineAttrObj(mid1X,mid2X,mid1Y,mid2Y,"transparent","black");
+			this.setAttr(line2,line2Attrs);
+
+			var line3 = $.svg('line').appendTo(this.container);
+			var line3Attrs = this.getLineAttrObj(mid2X,endX,mid2Y,endY,"transparent","black");
+			this.setAttr(line3,line3Attrs);
+
+		}
+
 
 	};
 
