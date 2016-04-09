@@ -2,14 +2,16 @@
 (function($,window,document,undefined){
 	var pluginName = "MemDiagram";
 	var defaults = {
-		width:1000,
+		width:1100,
 		height:800,
-		stackWidth:600,
-		heapWidth:300,
-		stackFrameWidth:400,
+		//stackWidth:600,
+		//heapWidth:300,
+		stackFrameWidth:300,
 		heapVarWidth:200,
 		varUnitHeight:30,
-		stackFrameOffset:50
+		stackFrameOffset:50,
+		moveBack:"",
+		moveForward:""
 	};
 
 	function Cmd2Step(commands){
@@ -82,6 +84,7 @@
 			}
 			return targetVar;
 		},
+
 		varAdd:function(index){
 			this.tempStep = $.extend(true,{},this.steps[index-1]);
 			var csf = this.csfInx();
@@ -110,6 +113,28 @@
 					this.steps.push(this.tempStep);
 				}
 			}
+		},
+		varAdd_heap:function(index){
+			this.tempStep = $.extend(true,{},this.steps[index-1]);
+			
+			var stepObj = this.stepDesc[index].decl;
+			if(typeof(stepObj.length)==="number"){
+				var size = stepObj.length;
+				for(var i=0; i<size; i++){
+					var arrElem = new Object();
+					arrElem.type = stepObj.type.replace("[]","");
+					arrElem.value = stepObj.value[i];
+					arrElem.address = stepObj.address+i;
+					this.tempStep.heapvars.push(arrElem);
+				}
+				this.steps.push(this.tempStep);
+			}
+			else{
+				this.tempStep.heapvars.push(stepObj);
+				this.steps.push(this.tempStep);
+			}
+			// this.tempStep.heapvars.push(stepObj);
+			// this.steps.push(this.tempStep);
 		},
 		varRem:function(index){
 			var csf = this.csfInx();
@@ -148,13 +173,6 @@
 					}
 				}
 			}
-		},
-		varAdd_heap:function(index){
-			this.tempStep = $.extend(true,{},this.steps[index-1]);
-			
-			var stepObj = this.stepDesc[index].decl;
-			this.tempStep.heapvars.push(stepObj);
-			this.steps.push(this.tempStep);
 		},
 		varRem_heap:function(index){
 			this.tempStep = $.extend(true,{},this.steps[index-1]);
@@ -218,10 +236,10 @@
 	};
 
 	function MemDiagram(element,commands,options){
-		this._defualts = defaults;
+		//this._defaults = defaults;
 		this.element = element;
 		this.settings = $.extend({}, defaults, options);
-		this.commands = commands;
+		//this.commands = commands;
 		var cmd2step = new Cmd2Step(commands);
 		this.steps = cmd2step.loadSteps();
 		this.stepCounter=0;
@@ -229,6 +247,7 @@
 		this.originY_stack = 100;
 		this.originX_heap = 700;
 		this.originY_heap = 100;
+
 		this.init();
 		this.displayStep();
 	};
@@ -244,7 +263,7 @@
 				"display":"inline-block",
 				"position": "relative",
 				"vertical-align": "middle",
-				"overflow":"hidden"
+				"overflow":"scroll"
 			};
 			this.setStyles(this.element,elementStyle);
 
@@ -261,7 +280,7 @@
 			var containerAttrs = {
 				"version":"1.1",
 				"width":"99%",
-				"height":"99%",				
+				"height":"99%",			
 				"viewBox":"0 0 1000 800",
 				"preserveAspectRatio":"xMinYMin meet",
 				"class":"svg-content"
@@ -277,20 +296,39 @@
 			var heapTitleAttrs = this.getTextAttrObj(800,80,40,"middle","keyElem");
 			this.setAttr(heapTitle,heapTitleAttrs);
 
-			var sepLine = $.svg("line").appendTo(this.container);
-			var sepLineAttrs = this.getLineAttrObj(600,600,0,this.settings.height,"transparent","black","keyElem");
-			this.setAttr(sepLine,sepLineAttrs);
+			// var sepLine = $.svg("line").appendTo(this.container);
+			// var sepLineAttrs = this.getLineAttrObj(600,600,0,this.settings.height,"transparent","black","keyElem");
+			// this.setAttr(sepLine,sepLineAttrs);
 
+			this.height = $('.svg-content').height();
+			this.zoomRatio = (this.height/800).toFixed(2);
+
+			this.navigation();
+
+		},
+		navigation:function(){
+			var back = this.settings.moveBack;
+			var forward = this.settings.moveForward;
 			var _this = this;
-			$(document).bind("keydown",function(event){
-				if(event.which===39){
-					_this.moveForward();
-				}
-				else if(event.which===37){
-					_this.moveBack();
-				}
-			})
 
+			if((back==="")&&(forward==="")){
+				$(document).bind("keydown",function(event){
+					if(event.which===39){
+						_this.moveForward();
+					}
+					else if(event.which===37){
+						_this.moveBack();
+					}
+				});
+			}
+			else{
+				$(back).click(function(){
+					_this.moveBack();
+				});
+				$(forward).click(function(){
+					_this.moveForward();
+				});
+			}
 		},
 		clear:function(){
 			$("svg").children().not(".keyElem").remove();
@@ -314,8 +352,9 @@
 			var reqHeight = y+height+this.settings.stackFrameOffset;
 			//var sfHeight = height+this.settings.stackFrameOffset;
 			if(reqHeight>this.settings.height){
-				$("svg").attr("height",reqHeight);
-				$("line.keyElem").attr("y2",reqHeight);
+
+				$("svg").attr("height",reqHeight*this.zoomRatio);
+				// $("line.keyElem").attr("y2",reqHeight);
 			}
 
 			var funcTitleText = func.funcName+"()";
@@ -356,10 +395,6 @@
 			var line1Attrs =  this.getLineAttrObj(300,300,initY,y,"transparent","black");
 			this.setAttr(line1,line1Attrs);
 
-			var line2 = $.svg("line").appendTo(this.container);
-			var line2Attrs =  this.getLineAttrObj(400,400,initY,y,"transparent","black");
-			this.setAttr(line2,line2Attrs);
-
 			this.originY_stack = y+this.settings.stackFrameOffset;
 		},
 		createHeapvars:function(heapvars){
@@ -375,8 +410,8 @@
 
 			var reqHeight = y+height+this.settings.stackFrameOffset;
 			if(reqHeight>this.settings.height){
-				$("svg").attr("height",reqHeight);
-				$("line.keyElem").attr("y2",reqHeight);
+				$("svg").attr("height",reqHeight*this.zoomRatio);
+				// $("line.keyElem").attr("y2",reqHeight);
 			}
 
 			for(var i=0; i<varsNum;i++){
@@ -384,12 +419,15 @@
 				var varUnitAttrs = this.getRectAttrObj(x,y,varUnitWidth,varUnitHeight,"black","transparent");
 				this.setAttr(varUnit,varUnitAttrs);
 
+				var type = $.svg("text").appendTo(this.container).text(heapvars[i].type);
 				var value = $.svg("text").appendTo(this.container).text(heapvars[i].value);
 				var address = $.svg("text").appendTo(this.container).text(heapvars[i].address);
 
-				var valueAttrs = this.getTextAttrObj(750,y+varUnitHeight-10,20,"middle","value");
-				var addressAttrs = this.getTextAttrObj(850,y+varUnitHeight-10,20,"middle","address");
+				var typeAttrs = this.getTextAttrObj(750,y+varUnitHeight-10,20,"middle","type");
+				var valueAttrs = this.getTextAttrObj(850,y+varUnitHeight-10,20,"middle","value");
+				var addressAttrs = this.getTextAttrObj(950,y+varUnitHeight-10,20,"middle","address");
 
+				this.setAttr(type,typeAttrs);
 				this.setAttr(value,valueAttrs);
 				this.setAttr(address,addressAttrs);
 
@@ -403,8 +441,7 @@
 		moveBack:function(){
 			this.stepCounter -= 1;
 			if(this.stepCounter<0){
-				alert("This is the first step");
-				this.stepCounter = 0;
+ 				this.stepCounter = 0;
 			}
 
 			this.displayStep();
@@ -412,7 +449,6 @@
 		moveForward:function(){
 			this.stepCounter += 1;
 			if(this.stepCounter > (this.steps.length - 1)){
-				alert("This is the last step");
 				this.stepCounter = this.steps.length - 1;
 			}
 			
@@ -510,10 +546,10 @@
 			var startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY;
 			startX = 400;
 			startY = ptrY;
-			mid1X = mid2X = 550;
+			mid1X = mid2X = 400+Math.random()*300;
 
-			if(valX>700){
-				endX = 700;
+			if(valX>800){
+				endX = 800;
 			}
 			else{
 				endX = 400;
