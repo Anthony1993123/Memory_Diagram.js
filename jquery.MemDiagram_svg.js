@@ -2,10 +2,7 @@
 (function($,window,document,undefined){
 	var pluginName = "MemDiagram";
 	var defaults = {
-		width:1100,
 		height:800,
-		//stackWidth:600,
-		//heapWidth:300,
 		stackFrameWidth:300,
 		heapVarWidth:200,
 		varUnitHeight:30,
@@ -32,10 +29,8 @@
 		stackAdd:function(index){
 			if(index==0){
 				var stepObj = {};
-				stepObj.funcName = this.stepDesc[index].details.name;
+				stepObj.funcName = this.stepDesc[index].details.name;				
 				stepObj.vars = this.stepDesc[index].details.decls;
-				//stepObj.ptrs = [];//pointers
-				//stepObj.heapvars = [];
 				this.steps[index].func = [];
 				this.steps[index].heapvars = [];
 				this.steps[index].func.push(stepObj);
@@ -45,7 +40,6 @@
 				var stepObj = {};
 				stepObj.funcName = this.stepDesc[index].details.name;
 				stepObj.vars = this.stepDesc[index].details.decls;
-				//stepObj.ptrs = [];//pointers
 				this.tempStep.func.push(stepObj);
 				this.steps.push(this.tempStep);
 			}
@@ -101,7 +95,12 @@
 						arrElem.type = stepObj.type.replace("[]","");	
 						arrElem.name = stepObj.name+"["+i+"]";
 						arrElem.value = stepObj.value[i];
-						arrElem.scopeLevel = stepObj.scopeLevel;
+						if(stepObj.scopeLevel===undefined){
+							arrElem.scopeLevel = 0;
+						}
+						else{
+							arrElem.scopeLevel = stepObj.scopeLevel;
+						}
 						arrElem.address = stepObj.address+i;
 						this.tempStep.func[csf].vars.push(arrElem);
 
@@ -147,7 +146,7 @@
 				var varsObj = this.tempStep.func[csf].vars;
 				var varsNum = this.tempStep.func[csf].vars.length;
 				for(var i=0; i<varsNum; i++){
-					if(stepObj.name==varsObj[i].name && stepObj.scopeLevel==varsObj[i].scopeLevel){
+					if(stepObj.type===varsObj[i].type && stepObj.name===varsObj[i].name && stepObj.scopeLevel===varsObj[i].scopeLevel){
 						varsObj.splice(i,1);
 						this.steps.push(this.tempStep);
 						break;
@@ -277,6 +276,8 @@
 			this.setStyles(this.container,containerStyle);
 
 			this.container.appendTo(this.element);
+			
+
 			var containerAttrs = {
 				"version":"1.1",
 				"width":"99%",
@@ -295,10 +296,6 @@
 			var heapTitle = $.svg("text").appendTo(this.container).text("HEAP");
 			var heapTitleAttrs = this.getTextAttrObj(800,80,40,"middle","keyElem");
 			this.setAttr(heapTitle,heapTitleAttrs);
-
-			// var sepLine = $.svg("line").appendTo(this.container);
-			// var sepLineAttrs = this.getLineAttrObj(600,600,0,this.settings.height,"transparent","black","keyElem");
-			// this.setAttr(sepLine,sepLineAttrs);
 
 			this.height = $('.svg-content').height();
 			this.zoomRatio = (this.height/800).toFixed(2);
@@ -350,16 +347,13 @@
 			var height = varUnitHeight*varsNum;
 
 			var reqHeight = y+height+this.settings.stackFrameOffset;
-			//var sfHeight = height+this.settings.stackFrameOffset;
 			if(reqHeight>this.settings.height){
-
 				$("svg").attr("height",reqHeight*this.zoomRatio);
-				// $("line.keyElem").attr("y2",reqHeight);
 			}
 
 			var funcTitleText = func.funcName+"()";
 			var funcTitle = $.svg("text").appendTo(this.container).text(funcTitleText);
-			var funcTitleAttrs = this.getTextAttrObj(x/2,y+height/2,20,"middle");
+			var funcTitleAttrs = this.getTextAttrObj(x/2,y+height/2,20,"middle","funcName");
 			this.setAttr(funcTitle,funcTitleAttrs);
 
 			for(var i=0; i<varsNum; i++){
@@ -411,7 +405,6 @@
 			var reqHeight = y+height+this.settings.stackFrameOffset;
 			if(reqHeight>this.settings.height){
 				$("svg").attr("height",reqHeight*this.zoomRatio);
-				// $("line.keyElem").attr("y2",reqHeight);
 			}
 
 			for(var i=0; i<varsNum;i++){
@@ -461,6 +454,7 @@
 			for(var i=0; i<funcNum;i++){
 				this.createStackFrame(currentStep.func[i]);
 			}
+
 			this.createHeapvars(currentStep.heapvars);
 			this.matchPointers();
 		},
