@@ -308,20 +308,20 @@
 			var forward = this.settings.moveForward;
 			var _this = this;
 
-			if((back==="")&&(forward==="")){
-				$(document).bind("keydown",function(event){
-					if(event.which===39){
-						_this.moveForward();
-					}
-					else if(event.which===37){
-						_this.moveBack();
-					}
-				});
-			}
-			else{
+			$(document).bind("keydown",function(event){
+				if(event.which===39){
+					_this.moveForward();
+				}
+				else if(event.which===37){
+					_this.moveBack();
+				}
+			});
+			if(back!==""){
 				$(back).click(function(){
 					_this.moveBack();
 				});
+			}
+			if(forward!==""){
 				$(forward).click(function(){
 					_this.moveForward();
 				});
