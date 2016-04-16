@@ -94,7 +94,13 @@
 						var arrElem = new Object();
 						arrElem.type = stepObj.type.replace("[]","");	
 						arrElem.name = stepObj.name+"["+i+"]";
-						arrElem.value = stepObj.value[i];
+						if(stepObj.pointer !== undefined){
+							arrElem.pointer = stepObj.pointer[i];
+						}
+						else{
+							arrElem.value = stepObj.value[i];
+						}
+						
 						if(stepObj.scopeLevel===undefined){
 							arrElem.scopeLevel = 0;
 						}
@@ -122,7 +128,13 @@
 				for(var i=0; i<size; i++){
 					var arrElem = new Object();
 					arrElem.type = stepObj.type.replace("[]","");
-					arrElem.value = stepObj.value[i];
+					if(stepObj.pointer !== undefined){
+						arrElem.pointer = stepObj.pointer[i];
+					}
+					else{
+						arrElem.value = stepObj.value[i];
+					}
+					
 					arrElem.address = stepObj.address+i;
 					this.tempStep.heapvars.push(arrElem);
 				}
@@ -244,11 +256,14 @@
 		this.stepCounter=0;
 		this.originX_stack = 100;
 		this.originY_stack = 100;
-		this.originX_heap = 700;
+		this.originX_heap = 650;
 		this.originY_heap = 100;
+
+		this.linePoints = [];
 
 		this.init();
 		this.displayStep();
+		$('#text').text(JSON.stringify(this.steps));
 	};
 
 	var svgns = "http://www.w3.org/2000/svg";
@@ -331,7 +346,7 @@
 			$("svg").children().not(".keyElem").remove();
 			this.originX_stack = 100;
 			this.originY_stack = 100;
-			this.originX_heap = 700;
+			this.originX_heap = 650;
 			this.originY_heap = 100;
 			
 		},
@@ -413,12 +428,21 @@
 				this.setAttr(varUnit,varUnitAttrs);
 
 				var type = $.svg("text").appendTo(this.container).text(heapvars[i].type);
-				var value = $.svg("text").appendTo(this.container).text(heapvars[i].value);
 				var address = $.svg("text").appendTo(this.container).text(heapvars[i].address);
+				var value;
 
-				var typeAttrs = this.getTextAttrObj(750,y+varUnitHeight-10,20,"middle","type");
-				var valueAttrs = this.getTextAttrObj(850,y+varUnitHeight-10,20,"middle","value");
-				var addressAttrs = this.getTextAttrObj(950,y+varUnitHeight-10,20,"middle","address");
+				var typeAttrs = this.getTextAttrObj(700,y+varUnitHeight-10,20,"middle","type");
+				var addressAttrs = this.getTextAttrObj(900,y+varUnitHeight-10,20,"middle","address");
+				var valueAttrs;
+
+				if(heapvars[i].pointer !== undefined){
+					value = $.svg("text").appendTo(this.container).text(heapvars[i].pointer);
+					valueAttrs = this.getTextAttrObj(800,y+varUnitHeight-10,20,"middle","pointer");
+				}
+				else{
+					value = $.svg("text").appendTo(this.container).text(heapvars[i].value);
+					valueAttrs = this.getTextAttrObj(800,y+varUnitHeight-10,20,"middle","value");
+				}
 
 				this.setAttr(type,typeAttrs);
 				this.setAttr(value,valueAttrs);
@@ -428,7 +452,7 @@
 			}
 
 			var line = $.svg("line").appendTo(this.container);
-			var lineAttrs =  this.getLineAttrObj(800,800,initY,y,"transparent","black");
+			var lineAttrs =  this.getLineAttrObj(750,750,initY,y,"transparent","black");
 			this.setAttr(line,lineAttrs);
 		},
 		moveBack:function(){
@@ -512,6 +536,13 @@
 			};
 			return attrObj;
 		},
+		getPolygonAttrObj:function(points,fill){
+			var attrObj = {
+				"points":points,
+				"fill":fill
+			};
+			return attrObj;
+		},
 		getY:function(element){
 			return $(element).attr("y");
 		},
@@ -521,37 +552,80 @@
 		matchPointers:function(){
 			var pointers = $('.pointer');
 			var _this = this;
+			var offset_left = 30;
+			var offset_right = 30;
 			pointers.each(function(){
 				var $this = this;
 				var ptrY = _this.getY($this);
-				
+				var ptrX = _this.getX($this);
 				var values = $('.address');
+				
+
 				values.each(function(){
+					
 					if($($this).text()===$(this).text()){
 						var valY = _this.getY(this);
 						var valX = _this.getX(this);
+						//alert(ptrX+","+ptrY+","+valX+","+valY);
 
-						_this.drawConnection(ptrY,valY,valX);
+						var startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY;
+
+						if(ptrX==350 && valX == 450){
+							startX = endX = 400;
+							mid1X = mid2X = startX+offset_left;
+							offset_left+=10;
+						}
+						else if(ptrX==350 && valX ==900){
+							startX = 400;
+							endX = 650;
+							mid1X = mid2X = startX+offset_left;	
+							offset_left+=10;
+						}
+						else if(ptrX==800 && valX==900){
+							startX = endX = 850;
+							mid1X = mid2X = startX+offset_right;
+							offset_right+=10;
+						}
+						else if(ptrX==800 && valX==450){
+							startX = 650;
+							endX = 400;
+							mid1X = mid2X = startX-offset_left;
+							offset_left+=10;
+						}
+
+						mid1Y = ptrY;
+						mid2Y = valY;
+
+						startY = ptrY;
+						endY = valY;
+
+						
+						_this.drawConnection(startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY);
+
 					}
 				});
 			});
 		},
-		drawConnection:function(ptrY,valY,valX){
-			var startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY;
-			startX = 400;
-			startY = ptrY;
-			mid1X = mid2X = 400+Math.random()*300;
+		
 
-			if(valX>800){
-				endX = 800;
+		drawConnection:function(startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY){
+			
+			var arrow = $.svg('polygon').appendTo(this.container);
+			var arrowAttrs;
+			var points;
+			if(endX==650){
+				var p1Y = parseInt(endY)+5;
+				points = (endX-5)+","+p1Y+" "+(endX-5)+","+(endY-5)+" "+endX+","+endY;
 			}
 			else{
-				endX = 400;
+				var p1Y=parseInt(endY)+5;
+				points = (endX+5)+","+p1Y+" "+(endX+5)+","+(endY-5)+" "+endX+","+endY;
 			}
-			endY = valY;
-			mid1Y = startY;
-			mid2Y = endY
-			
+			arrowAttrs = this.getPolygonAttrObj(points,"black");
+			this.setAttr(arrow,arrowAttrs);
+
+
+
 			var line1 = $.svg('line').appendTo(this.container);
 			var line1Attrs = this.getLineAttrObj(startX,mid1X,startY,mid1Y,"transparent","black");
 			this.setAttr(line1,line1Attrs);
@@ -565,8 +639,7 @@
 			this.setAttr(line3,line3Attrs);
 
 		}
-
-
+		
 	};
 
 	$.fn[pluginName] = function(commands,options){
