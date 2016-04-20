@@ -1,16 +1,4 @@
-## Appendix A: User Guide
 
-### Introduction
-This is the user guide of the JS library implemented for this project. 
-
-### Software Dependency
-This library was implemented as a jQuery plugin so the jQuery library is required to be included in your HTML page. You can download jQuery [here](http://jquery.com), and then include it with my library like this:
-
-~~~
-<script type="text/javascript" src="jquery-1.12.1.js"/>
-<script type="text/javascript" src="jquery.MemDiagram.js"/>
-~~~
-	
 ### Usage
 Call the plugin on a container as you wish and pass a set of pre-defined commands to the plugin. You can also pass options to customize the plugin in some extent. The available options will be discussed later.
 
