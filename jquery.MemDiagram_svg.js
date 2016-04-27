@@ -3,8 +3,8 @@
 	var pluginName = "MemDiagram";
 	var defaults = {
 		height:800,
-		stackFrameWidth:300,
-		heapVarWidth:200,
+		stackFrameWidth:400,
+		heapVarWidth:300,
 		varUnitHeight:30,
 		stackFrameOffset:50,
 		moveBack:"",
@@ -144,8 +144,7 @@
 				this.tempStep.heapvars.push(stepObj);
 				this.steps.push(this.tempStep);
 			}
-			// this.tempStep.heapvars.push(stepObj);
-			// this.steps.push(this.tempStep);
+			
 		},
 		varRem:function(index){
 			var csf = this.csfInx();
@@ -247,23 +246,21 @@
 	};
 
 	function MemDiagram(element,commands,options){
-		//this._defaults = defaults;
 		this.element = element;
 		this.settings = $.extend({}, defaults, options);
-		//this.commands = commands;
 		var cmd2step = new Cmd2Step(commands);
 		this.steps = cmd2step.loadSteps();
 		this.stepCounter=0;
 		this.originX_stack = 100;
 		this.originY_stack = 100;
-		this.originX_heap = 650;
+		this.originX_heap = 1100;
 		this.originY_heap = 100;
 
 		this.linePoints = [];
 
 		this.init();
 		this.displayStep();
-		$('#text').text(JSON.stringify(this.steps));
+		//$('#text').text(JSON.stringify(this.steps));
 	};
 
 	var svgns = "http://www.w3.org/2000/svg";
@@ -297,7 +294,7 @@
 				"version":"1.1",
 				"width":"99%",
 				"height":"99%",			
-				"viewBox":"0 0 1000 800",
+				"viewBox":"0 0 1600 800",
 				"preserveAspectRatio":"xMinYMin meet",
 				"class":"svg-content"
 			};
@@ -309,7 +306,7 @@
 			this.setAttr(stackTitle,stackTitleAttrs);
 
 			var heapTitle = $.svg("text").appendTo(this.container).text("HEAP");
-			var heapTitleAttrs = this.getTextAttrObj(800,80,40,"middle","keyElem");
+			var heapTitleAttrs = this.getTextAttrObj(1150,80,40,"middle","keyElem");
 			this.setAttr(heapTitle,heapTitleAttrs);
 
 			this.height = $('.svg-content').height();
@@ -346,7 +343,7 @@
 			$("svg").children().not(".keyElem").remove();
 			this.originX_stack = 100;
 			this.originY_stack = 100;
-			this.originX_heap = 650;
+			this.originX_heap = 1000;
 			this.originY_heap = 100;
 			
 		},
@@ -366,10 +363,16 @@
 				$("svg").attr("height",reqHeight*this.zoomRatio);
 			}
 
-			var funcTitleText = func.funcName+"()";
+			var funcTitleText = func.funcName;
 			var funcTitle = $.svg("text").appendTo(this.container).text(funcTitleText);
 			var funcTitleAttrs = this.getTextAttrObj(x/2,y+height/2,20,"middle","funcName");
 			this.setAttr(funcTitle,funcTitleAttrs);
+
+			var typeTextX = 150;
+			var nameTextX = 250;
+			var valueTextX = 350;
+			var addrTextX = 450;
+			var lineX = 400;
 
 			for(var i=0; i<varsNum; i++){
 				var varUnit = $.svg("rect").appendTo(this.container);
@@ -381,17 +384,17 @@
 				var address = $.svg("text").appendTo(this.container).text(func.vars[i].address);
 				var value;
 
-				var typeAttrs = this.getTextAttrObj(150,y+varUnitHeight-10,20,"middle","type");
-				var nameAttrs = this.getTextAttrObj(250,y+varUnitHeight-10,20,"middle","name");
-				var addressAttrs = this.getTextAttrObj(450,y+varUnitHeight-10,20,"middle","address");
+				var typeAttrs = this.getTextAttrObj(typeTextX,y+varUnitHeight-10,20,"middle","type");
+				var nameAttrs = this.getTextAttrObj(nameTextX,y+varUnitHeight-10,20,"middle","name");
+				var addressAttrs = this.getTextAttrObj(addrTextX,y+varUnitHeight-10,20,"middle","address");
 				var valueAttrs;
 				if(func.vars[i].pointer!==undefined){
 					value = $.svg("text").appendTo(this.container).text(func.vars[i].pointer);
-					valueAttrs = this.getTextAttrObj(350,y+varUnitHeight-10,20,"middle","pointer");
+					valueAttrs = this.getTextAttrObj(valueTextX,y+varUnitHeight-10,20,"middle","pointer");
 				}
 				else{
 					value = $.svg("text").appendTo(this.container).text(func.vars[i].value);
-					valueAttrs = this.getTextAttrObj(350,y+varUnitHeight-10,20,"middle","value");
+					valueAttrs = this.getTextAttrObj(valueTextX,y+varUnitHeight-10,20,"middle","value");
 				}
 				this.setAttr(type,typeAttrs);
 				this.setAttr(name,nameAttrs);
@@ -401,7 +404,7 @@
 				y = y+varUnitHeight;
 			}
 			var line1 = $.svg("line").appendTo(this.container);
-			var line1Attrs =  this.getLineAttrObj(300,300,initY,y,"transparent","black");
+			var line1Attrs =  this.getLineAttrObj(lineX,lineX,initY,y,"transparent","black");
 			this.setAttr(line1,line1Attrs);
 
 			this.originY_stack = y+this.settings.stackFrameOffset;
@@ -422,6 +425,11 @@
 				$("svg").attr("height",reqHeight*this.zoomRatio);
 			}
 
+			var typeTextX = 1050;
+			var valueTextX = 1150;
+			var addrTextX = 1250;
+			var lineX = 1200;
+
 			for(var i=0; i<varsNum;i++){
 				var varUnit = $.svg("rect").appendTo(this.container);
 				var varUnitAttrs = this.getRectAttrObj(x,y,varUnitWidth,varUnitHeight,"black","transparent");
@@ -431,17 +439,17 @@
 				var address = $.svg("text").appendTo(this.container).text(heapvars[i].address);
 				var value;
 
-				var typeAttrs = this.getTextAttrObj(700,y+varUnitHeight-10,20,"middle","type");
-				var addressAttrs = this.getTextAttrObj(900,y+varUnitHeight-10,20,"middle","address");
+				var typeAttrs = this.getTextAttrObj(typeTextX,y+varUnitHeight-10,20,"middle","type");
+				var addressAttrs = this.getTextAttrObj(addrTextX,y+varUnitHeight-10,20,"middle","address");
 				var valueAttrs;
 
 				if(heapvars[i].pointer !== undefined){
 					value = $.svg("text").appendTo(this.container).text(heapvars[i].pointer);
-					valueAttrs = this.getTextAttrObj(800,y+varUnitHeight-10,20,"middle","pointer");
+					valueAttrs = this.getTextAttrObj(valueTextX,y+varUnitHeight-10,20,"middle","pointer");
 				}
 				else{
 					value = $.svg("text").appendTo(this.container).text(heapvars[i].value);
-					valueAttrs = this.getTextAttrObj(800,y+varUnitHeight-10,20,"middle","value");
+					valueAttrs = this.getTextAttrObj(valueTextX,y+varUnitHeight-10,20,"middle","value");
 				}
 
 				this.setAttr(type,typeAttrs);
@@ -452,7 +460,7 @@
 			}
 
 			var line = $.svg("line").appendTo(this.container);
-			var lineAttrs =  this.getLineAttrObj(750,750,initY,y,"transparent","black");
+			var lineAttrs =  this.getLineAttrObj(lineX,lineX,initY,y,"transparent","black");
 			this.setAttr(line,lineAttrs);
 		},
 		moveBack:function(){
@@ -560,45 +568,41 @@
 				var ptrX = _this.getX($this);
 				var values = $('.address');
 				
-
 				values.each(function(){
 					
 					if($($this).text()===$(this).text()){
 						var valY = _this.getY(this);
 						var valX = _this.getX(this);
-						//alert(ptrX+","+ptrY+","+valX+","+valY);
-
 						var startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY;
 
 						if(ptrX==350 && valX == 450){
-							startX = endX = 400;
+							startX = endX = 500;
 							mid1X = mid2X = startX+offset_left;
 							offset_left+=10;
 						}
-						else if(ptrX==350 && valX ==900){
-							startX = 400;
-							endX = 650;
+						else if(ptrX==350 && valX ==1250){
+							startX = 500;
+							endX = 1000;
 							mid1X = mid2X = startX+offset_left;	
 							offset_left+=10;
 						}
-						else if(ptrX==800 && valX==900){
-							startX = endX = 850;
+						else if(ptrX==1150 && valX==1250){
+							startX = endX = 1300;
 							mid1X = mid2X = startX+offset_right;
 							offset_right+=10;
 						}
-						else if(ptrX==800 && valX==450){
-							startX = 650;
-							endX = 400;
+						else if(ptrX==1150 && valX==450){
+							startX = 1000;
+							endX = 500;
 							mid1X = mid2X = startX-offset_left;
 							offset_left+=10;
 						}
 
-						mid1Y = ptrY;
+						mid1Y = parseInt(ptrY)-10;
 						mid2Y = valY;
 
-						startY = ptrY;
+						startY = parseInt(ptrY)-10;
 						endY = valY;
-
 						
 						_this.drawConnection(startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY);
 
@@ -606,14 +610,12 @@
 				});
 			});
 		},
-		
-
 		drawConnection:function(startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY){
 			
 			var arrow = $.svg('polygon').appendTo(this.container);
 			var arrowAttrs;
 			var points;
-			if(endX==650){
+			if(endX==1000){
 				var p1Y = parseInt(endY)+5;
 				points = (endX-5)+","+p1Y+" "+(endX-5)+","+(endY-5)+" "+endX+","+endY;
 			}
@@ -623,8 +625,6 @@
 			}
 			arrowAttrs = this.getPolygonAttrObj(points,"black");
 			this.setAttr(arrow,arrowAttrs);
-
-
 
 			var line1 = $.svg('line').appendTo(this.container);
 			var line1Attrs = this.getLineAttrObj(startX,mid1X,startY,mid1Y,"transparent","black");
