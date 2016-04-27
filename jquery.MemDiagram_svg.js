@@ -1,5 +1,5 @@
-;
-(function($,window,document,undefined){
+
+;(function($,window,document,undefined){
 	var pluginName = "MemDiagram";
 	var defaults = {
 		height:800,
@@ -15,7 +15,7 @@
 		this.steps = [{}];
 		this.tempStep = {};
 		this.stepDesc = commands;
-	};
+	}
 
 	Cmd2Step.prototype = {
 		stepNumber:function(){
@@ -27,8 +27,9 @@
 			return index;
 		},
 		stackAdd:function(index){
-			if(index==0){
-				var stepObj = {};
+			var stepObj = {};
+      if(index===0){
+				
 				stepObj.funcName = this.stepDesc[index].details.name;				
 				stepObj.vars = this.stepDesc[index].details.decls;
 				this.steps[index].func = [];
@@ -37,7 +38,7 @@
 			}
 			else{
 				this.tempStep = $.extend(true,{},this.steps[index-1]);
-				var stepObj = {};
+				
 				stepObj.funcName = this.stepDesc[index].details.name;
 				stepObj.vars = this.stepDesc[index].details.decls;
 				this.tempStep.func.push(stepObj);
@@ -51,7 +52,7 @@
 			else{
 				this.tempStep = $.extend(true,{},this.steps[index-1]);
 				//return value 
-				if(!(this.stepDesc[index].returnLoc===undefined)){
+				if(this.stepDesc[index].returnLoc!==undefined){
 					var addr = this.stepDesc[index].returnLoc;
 					var targetVar = this.findVar(this.tempStep,addr);
 					targetVar.value = this.stepDesc[index].returnVal;
@@ -62,7 +63,7 @@
 		},
 		findVar:function(step,address){
 			var funcLength = step.func.length;
-			var heapvarsLength = step.heapvars.length;
+			
 			var targetVar;
 			for(var i=0; i<funcLength;i++){
 				var varsLength = step.func[i].vars.length;
@@ -72,7 +73,7 @@
 						break;
 					}
 				}
-				if(!targetVar===undefined){
+				if(targetVar!==undefined){
 					break;
 				}
 			}
@@ -91,7 +92,7 @@
 				if(typeof(stepObj.length) === "number"){
 					var size = stepObj.length;
 					for(var i=0; i<size;i++){
-						var arrElem = new Object();
+            var arrElem = {};
 						arrElem.type = stepObj.type.replace("[]","");	
 						arrElem.name = stepObj.name+"["+i+"]";
 						if(stepObj.pointer !== undefined){
@@ -126,7 +127,7 @@
 			if(typeof(stepObj.length)==="number"){
 				var size = stepObj.length;
 				for(var i=0; i<size; i++){
-					var arrElem = new Object();
+          var arrElem = {};
 					arrElem.type = stepObj.type.replace("[]","");
 					if(stepObj.pointer !== undefined){
 						arrElem.pointer = stepObj.pointer[i];
@@ -236,7 +237,7 @@
 						this.varRem_heap(i);
 						break;
 					case "varmod_heap":
-						this.varMod_heap(i)
+						this.varMod_heap(i);
 				}
 			}
 			return this.steps;
@@ -260,8 +261,7 @@
 
 		this.init();
 		this.displayStep();
-		//$('#text').text(JSON.stringify(this.steps));
-	};
+	}
 
 	var svgns = "http://www.w3.org/2000/svg";
 	$.svg = function $svg(tagName){
@@ -284,7 +284,7 @@
     			"position": "absolute",
    			 	"top": 0,
     			"left": 0,
-			}
+			};
 			this.setStyles(this.container,containerStyle);
 
 			this.container.appendTo(this.element);
@@ -492,19 +492,19 @@
 		},
 		setAttr:function(element,attrs){
 			if (element instanceof jQuery){
-				for(attr in attrs){
+				for(var attr in attrs){
 					element.attr(attr,attrs[attr]);
 				}
 			}
 			else{
-				for(attr in attrs){
+				for(var attr in attrs){
 					element.setAttribute(attr,attrs[attr]);
 				}
 			}
 			
 		},
 		setStyles:function(element,style){
-			for(key in style){
+			for(var key in style){
 				element.css(key,style[key]);
 			}
 		},
@@ -615,12 +615,11 @@
 			var arrow = $.svg('polygon').appendTo(this.container);
 			var arrowAttrs;
 			var points;
-			if(endX==1000){
-				var p1Y = parseInt(endY)+5;
+			var p1Y = parseInt(endY)+5;
+      		if(endX==1000){
 				points = (endX-5)+","+p1Y+" "+(endX-5)+","+(endY-5)+" "+endX+","+endY;
 			}
 			else{
-				var p1Y=parseInt(endY)+5;
 				points = (endX+5)+","+p1Y+" "+(endX+5)+","+(endY-5)+" "+endX+","+endY;
 			}
 			arrowAttrs = this.getPolygonAttrObj(points,"black");
