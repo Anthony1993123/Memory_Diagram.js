@@ -1,6 +1,7 @@
 
 ;(function($,window,document,undefined){
 	var pluginName = "MemDiagram";
+	// Default settings
 	var defaults = {
 		height:800,
 		stackFrameWidth:400,
@@ -11,6 +12,7 @@
 		moveForward:""
 	};
 
+	// Convert the JSON descriptions to step objects
 	function Cmd2Step(commands){
 		this.steps = [{}];
 		this.tempStep = {};
@@ -18,6 +20,7 @@
 	}
 
 	Cmd2Step.prototype = {
+		// The current index of the descriptions
 		stepNumber:function(){
 			return this.stepDesc.length;
 		},
@@ -26,9 +29,10 @@
 			var index = this.tempStep.func.length - 1;
 			return index;
 		},
+		// Add a stack frame
 		stackAdd:function(index){
 			var stepObj = {};
-      if(index===0){
+      		if(index===0){
 				
 				stepObj.funcName = this.stepDesc[index].details.name;				
 				stepObj.vars = this.stepDesc[index].details.decls;
@@ -45,13 +49,13 @@
 				this.steps.push(this.tempStep);
 			}
 		},
+		// Remove the current stack
 		stackRem:function(index){
 			if(index <=0){
 				alert("No stack frame exist");
 			}
 			else{
 				this.tempStep = $.extend(true,{},this.steps[index-1]);
-				//return value 
 				if(this.stepDesc[index].returnLoc!==undefined){
 					var addr = this.stepDesc[index].returnLoc;
 					var targetVar = this.findVar(this.tempStep,addr);
@@ -61,9 +65,9 @@
 				this.steps.push(this.tempStep);
 			}
 		},
+		// Find the expected variable
 		findVar:function(step,address){
 			var funcLength = step.func.length;
-			
 			var targetVar;
 			for(var i=0; i<funcLength;i++){
 				var varsLength = step.func[i].vars.length;
@@ -79,7 +83,7 @@
 			}
 			return targetVar;
 		},
-
+		// Create a variable in the current stack frame
 		varAdd:function(index){
 			this.tempStep = $.extend(true,{},this.steps[index-1]);
 			var csf = this.csfInx();
@@ -120,6 +124,7 @@
 				}
 			}
 		},
+		// Create a variable in the heap
 		varAdd_heap:function(index){
 			this.tempStep = $.extend(true,{},this.steps[index-1]);
 			
@@ -147,6 +152,7 @@
 			}
 			
 		},
+		// Remove a variable from the current stack frame
 		varRem:function(index){
 			var csf = this.csfInx();
 			this.tempStep = $.extend(true,{},this.steps[index-1]);
@@ -166,6 +172,7 @@
 				}
 			}
 		},
+		// Change value of a variable
 		varMod:function(index){
 			var csf = this.csfInx();
 			this.tempStep = $.extend(true,{},this.steps[index-1]);
@@ -185,6 +192,7 @@
 				}
 			}
 		},
+		// Remove a variable from the heap
 		varRem_heap:function(index){
 			this.tempStep = $.extend(true,{},this.steps[index-1]);
 			
@@ -199,6 +207,7 @@
 				}
 			}
 		},
+		// Change value of a variable in the heap
 		varMod_heap:function(index){
 			this.tempStep = $.extend(true,{},this.steps[index-1]);
 			var stepObj = this.stepDesc[index].decl;
@@ -212,6 +221,7 @@
 				}
 			}
 		},
+		// Load steps, return an array of step objects
 		loadSteps:function(){
 			for(var i = 0; i<this.stepNumber(); i++){
 				switch(this.stepDesc[i].command){
@@ -245,7 +255,7 @@
 
 
 	};
-
+	// Create memory diagrams
 	function MemDiagram(element,commands,options){
 		this.element = element;
 		this.settings = $.extend({}, defaults, options);
@@ -269,6 +279,7 @@
 	};
 
 	MemDiagram.prototype = {
+		// Initialize
 		init:function(){
 			var elementStyle = {
 				"display":"inline-block",
@@ -315,6 +326,7 @@
 			this.navigation();
 
 		},
+		// Specify the navigation control element
 		navigation:function(){
 			var back = this.settings.moveBack;
 			var forward = this.settings.moveForward;
@@ -339,6 +351,7 @@
 				});
 			}
 		},
+		// Remove all the diagram element on the page
 		clear:function(){
 			$("svg").children().not(".keyElem").remove();
 			this.originX_stack = 100;
@@ -347,6 +360,7 @@
 			this.originY_heap = 100;
 			
 		},
+		// Create diagram for stack frames
 		createStackFrame:function(func){
 			var varsNum = func.vars.length;
 			
@@ -409,6 +423,7 @@
 
 			this.originY_stack = y+this.settings.stackFrameOffset;
 		},
+		// Create diagram for the heap
 		createHeapvars:function(heapvars){
 			var varsNum = heapvars.length;
 
@@ -463,6 +478,7 @@
 			var lineAttrs =  this.getLineAttrObj(lineX,lineX,initY,y,"transparent","black");
 			this.setAttr(line,lineAttrs);
 		},
+		// Move to the previous step
 		moveBack:function(){
 			this.stepCounter -= 1;
 			if(this.stepCounter<0){
@@ -471,6 +487,7 @@
 
 			this.displayStep();
 		},
+		// Move to the next step
 		moveForward:function(){
 			this.stepCounter += 1;
 			if(this.stepCounter > (this.steps.length - 1)){
@@ -479,6 +496,7 @@
 			
 			this.displayStep();
 		},
+		// Display the diagram on the HTML page
 		displayStep:function(){
 			this.clear();
 			var currentStep = this.steps[this.stepCounter];
@@ -557,6 +575,7 @@
 		getX:function(element){
 			return $(element).attr("x");
 		},
+		// Match pointers with pointed variable
 		matchPointers:function(){
 			var pointers = $('.pointer');
 			var _this = this;
@@ -610,6 +629,7 @@
 				});
 			});
 		},
+		// Create the arrows to represent pointers
 		drawConnection:function(startX,startY,mid1X,mid1Y,mid2X,mid2Y,endX,endY){
 			
 			var arrow = $.svg('polygon').appendTo(this.container);
