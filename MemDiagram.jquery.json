@@ -1,5 +1,5 @@
 {
-    "name": "memdiagram",
+    "name": "MemDiagram",
     "title": "MemDiagram",
     "description": "Create memory diagrams based on JSON descriptions",
     "version": "1.0.0",
