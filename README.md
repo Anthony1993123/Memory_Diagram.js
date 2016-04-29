@@ -1,13 +1,24 @@
+<center style="text-align:justify;margin:1.5cm;font-family:Latin Modern ">
 
-### Usage
-Call the plugin on a container as you wish and pass a set of pre-defined commands to the plugin. You can also pass options to customize the plugin in some extent. The available options will be discussed later.
+ 
+
+## Software Dependency
+This library was implemented as a jQuery plugin so the jQuery library is required to be included in your HTML page. You can download jQuery [here](http://jquery.com), and then include it with my library like this:
+
+~~~
+<script type="text/javascript" src="jquery-1.12.1.js"/>
+<script type="text/javascript" src="jquery.MemDiagram.js"/>
+~~~
+	
+## Usage
+Call the plugin on a container as you wish and pass a set of pre-defined commands to the plugin. You can also pass options to customise the plugin in some extent. The available options will be discussed later.
 
 ~~~javascript
 $('#container').MemDiagram(commands,options)
 ~~~
 
 <!--The title to be decided later-->
-### Commands
+## Commands
 There are eight commands for describing steps. They are listed as follow:
 
 Notes for the object descriptions:
@@ -27,7 +38,7 @@ details:{
 	decls:[{type:"int",name:"x",value:"4",scopeLevel:0,address:"0x100"}]
 }
 ~~~
-The `name` key specifies the name of the function. The `decls` key specifieds the local variables declared in the function. Variable declaration will be explained later.
+The `name` key specifies the name of the function. The `decls` key specifies the local variables declared in the function. Variable declaration will be explained later.
 
 ##### 2. Remove stack frame
 Remove the last stack frame added to the diagram.
@@ -110,7 +121,7 @@ decl:{
 
 Change the value of a variable.
 
-Exampe:
+Example:
 
 ~~~
 command:"varmod",
@@ -171,3 +182,38 @@ decl:{
 ~~~
 
 ### Options
+Options is an object passed to customize the memory diagram in some extent. There are seven options available, shown as follows:
+
+#### height
+The height of the viewBox
+
+
+#### stackFrameWidth
+The width of a stack frame
+
+#### heapVarWidth
+The width of the heap table
+
+#### varUnitHeight
+The height of a row in the table
+
+#### stackFrameOffset
+The space between two stack frames
+
+#### moveBack
+The element used to move to the previous step. For example:
+
+~~~
+options = {
+	moveBack:"#back"
+}
+~~~
+
+#### moveForward
+The element used to move to the next step. For example:
+
+~~~
+options = {
+	moveForward:"#forward"
+}
+~~~
