@@ -1,8 +1,8 @@
 {
-    "name": "memDiagram",
+    "name": "memdiagram",
     "title": "MemDiagram",
     "description": "Create memory diagrams based on JSON descriptions",
-    "version": "1.0",
+    "version": "1.0.0",
     "author": {
         "name": "Jiawei",
         "email": "anjiawei93@gmail.com",
